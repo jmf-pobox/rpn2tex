@@ -1,0 +1,188 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rpn2tex"
+description = "Educational example: Convert RPN expressions to LaTeX math mode"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    { name = "txt2tex Educational", email = "example@example.com" },
+]
+dependencies = []
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+    "Intended Audience :: Education",
+]
+
+[project.scripts]
+rpn2tex = "rpn2tex.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.13.0",
+    "mypy>=1.18.1",
+    "pyright>=1.1.0",
+    "pytest>=8.4.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rpn2tex"]
+
+[tool.hatch.build]
+exclude = [
+    ".gitignore",
+    "tests/",
+    "examples/",
+]
+
+[tool.hatch.version]
+path = "src/rpn2tex/__version__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+    "ruff>=0.13.0",
+    "mypy>=1.18.1",
+    "pyright>=1.1.0",
+    "pytest>=8.4.2",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "PYTHONPATH=src pytest {args:tests}"
+test-cov = "PYTHONPATH=src pytest --cov=src/rpn2tex --cov-report=term-missing --cov-report=html {args:tests}"
+lint = "ruff check ."
+format = "ruff format ."
+format-check = "ruff format --check ."
+type = "mypy src/rpn2tex tests"
+type-pyright = "pyright"
+check = ["lint", "type", "type-pyright", "test"]
+check-cov = ["lint", "type", "type-pyright", "test-cov"]
+# CLI wrapper
+cli = "PYTHONPATH=src python -m rpn2tex.cli {args}"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "TID", # flake8-tidy-imports
+    "RUF", # Ruff-specific rules
+    # Safety & Bug Prevention
+    "S",   # flake8-bandit (security)
+    "BLE", # flake8-blind-except
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "A",   # flake8-builtins
+    # Dead Code & Quality
+    "ERA", # flake8-eradicate (commented code)
+    "PIE", # flake8-pie (misc improvements)
+    "RSE", # flake8-raise
+    "ARG", # flake8-unused-arguments
+    "RET", # flake8-return
+    # Performance & Modern Python
+    "PERF", # perflint
+    "PTH",  # flake8-use-pathlib
+    "ISC",  # flake8-implicit-str-concat
+    "FBT",  # flake8-boolean-trap
+    "C90",  # mccabe complexity
+    # Testing & Advanced
+    "PT",   # flake8-pytest-style
+    "SLF",  # flake8-self
+]
+
+ignore = [
+    "TC001",  # Move import into TYPE_CHECKING - too aggressive for runtime imports
+    "TC003",  # Move standard lib import into TYPE_CHECKING - unnecessary overhead
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow assert in tests (S101), print statements (T20), and private member access (SLF001)
+"tests/*" = ["S101", "T20", "SLF001"]
+# Allow print in CLI - intentional user output
+"src/rpn2tex/cli.py" = ["T20"]
+# Allow unused parent arg in singledispatch visitor pattern
+"src/rpn2tex/latex_gen.py" = ["ARG002"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+enable_error_code = ["ignore-without-code"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+precision = 2
+
+[tool.ruff.lint.mccabe]
+max-complexity = 30
+
+[tool.ruff.lint.isort]
+known-first-party = ["rpn2tex"]
+combine-as-imports = true
+
