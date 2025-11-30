@@ -393,6 +393,8 @@ hatch run type        # mypy strict mode
 
 The following features are intentionally **not implemented**. Use these exercises to practice extending the rpn2tex codebase, which will prepare you for contributing to txt2tex.
 
+**For each exercise**: Write unit tests in `tests/test_rpn2tex.py` to verify your implementation. Test each layer (lexer, parser, generator) independently, then add integration tests for the full pipeline. Run tests with `hatch run test`.
+
 ### Exercise 1: Add Exponentiation (`^`)
 
 **Goal**: Support `2 3 ^` → `$2^{3}$`
