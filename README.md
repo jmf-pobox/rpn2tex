@@ -399,43 +399,17 @@ The following features are intentionally **not implemented**. Use these exercise
 
 **Difficulty**: Easy
 
-**Steps**:
+**Files to modify**: `tokens.py`, `lexer.py`, `ast_nodes.py`, `parser.py`, `latex_gen.py`
 
-1. **tokens.py**: Add `CARET = auto()` to `TokenType`
-
-2. **lexer.py**: Add case for `^` in `_scan_token()`:
-   ```python
-   if char == "^":
-       self._advance()
-       return Token(TokenType.CARET, "^", start_line, start_column)
-   ```
-
-3. **ast_nodes.py**: Add new node type:
-   ```python
-   @dataclass(frozen=True)
-   class Exponent(ASTNode):
-       base: Expr
-       exponent: Expr
-   ```
-   Update the `Expr` type alias to include `Exponent`.
-
-4. **parser.py**: Handle `CARET` token (similar to other binary operators)
-
-5. **latex_gen.py**: Add visitor for `Exponent`:
-   ```python
-   @_visit.register
-   def _visit_exponent(self, node: Exponent) -> str:
-       base = self._visit(node.base)
-       exp = self._visit(node.exponent)
-       # Use braces for complex exponents
-       return f"{base}^{{{exp}}}"
-   ```
-
-6. **tests/test_rpn2tex.py**: Add tests
+**Hints**:
+- Follow the pattern of existing binary operators for the token and lexer
+- Exponentiation needs its own AST node type (not `BinaryOp`) because LaTeX syntax differs
+- LaTeX exponents use `^{...}` syntax
 
 **Test Cases**:
 - `2 3 ^` → `$2^{3}$`
-- `2 3 4 + ^` → `$2^{( 3 + 4 )}$` (complex exponent needs parens)
+- `2 10 ^` → `$2^{10}$`
+- `2 3 4 + ^` → `$2^{( 3 + 4 )}$` (consider: when does an exponent need parentheses?)
 
 ---
 
@@ -445,43 +419,12 @@ The following features are intentionally **not implemented**. Use these exercise
 
 **Difficulty**: Medium (introduces unary operators)
 
-**Steps**:
+**Files to modify**: `tokens.py`, `lexer.py`, `ast_nodes.py`, `parser.py`, `latex_gen.py`
 
-1. **tokens.py**: Add `SQRT = auto()` to `TokenType`
-
-2. **lexer.py**: Recognize the keyword `sqrt`:
-   ```python
-   # After scanning an identifier, check if it's "sqrt"
-   if identifier == "sqrt":
-       return Token(TokenType.SQRT, "sqrt", ...)
-   ```
-   
-   **Hint**: You'll need to add identifier scanning similar to number scanning.
-
-3. **ast_nodes.py**: Add new node:
-   ```python
-   @dataclass(frozen=True)
-   class SquareRoot(ASTNode):
-       operand: Expr
-   ```
-
-4. **parser.py**: Handle `SQRT` as a unary operator:
-   ```python
-   elif token.type == TokenType.SQRT:
-       if len(stack) < 1:
-           raise ParserError("sqrt requires one operand", token)
-       operand = stack.pop()
-       node = SquareRoot(..., operand=operand)
-       stack.append(node)
-   ```
-
-5. **latex_gen.py**: Add visitor:
-   ```python
-   @_visit.register
-   def _visit_sqrt(self, node: SquareRoot) -> str:
-       operand = self._visit(node.operand)
-       return f"\\sqrt{{{operand}}}"
-   ```
+**Hints**:
+- Unlike `+` or `^`, this operator takes only one operand
+- The lexer needs to recognize multi-character keywords, not just single characters
+- LaTeX uses `\sqrt{...}` syntax
 
 **Test Cases**:
 - `9 sqrt` → `$\sqrt{9}$`
@@ -495,37 +438,12 @@ The following features are intentionally **not implemented**. Use these exercise
 
 **Difficulty**: Hard (two operands, special LaTeX syntax)
 
-**Steps**:
+**Files to modify**: `tokens.py`, `lexer.py`, `ast_nodes.py`, `parser.py`, `latex_gen.py`
 
-1. **tokens.py**: Add `ROOT = auto()`
-
-2. **lexer.py**: Recognize `root` keyword
-
-3. **ast_nodes.py**: Add node:
-   ```python
-   @dataclass(frozen=True)
-   class NthRoot(ASTNode):
-       radicand: Expr  # The value under the radical
-       index: Expr     # The root index (e.g., 3 for cube root)
-   ```
-
-4. **parser.py**: Handle as binary operator:
-   ```python
-   # 8 3 root means: 3rd root of 8
-   # So: radicand=8 (deeper in stack), index=3 (top of stack)
-   index = stack.pop()
-   radicand = stack.pop()
-   node = NthRoot(..., radicand=radicand, index=index)
-   ```
-
-5. **latex_gen.py**: Generate proper LaTeX:
-   ```python
-   @_visit.register
-   def _visit_nth_root(self, node: NthRoot) -> str:
-       radicand = self._visit(node.radicand)
-       index = self._visit(node.index)
-       return f"\\sqrt[{index}]{{{radicand}}}"
-   ```
+**Hints**:
+- This takes two operands but isn't like other binary operators
+- Think carefully about stack order: which operand is the radicand vs the index?
+- LaTeX uses `\sqrt[index]{radicand}` syntax
 
 **Test Cases**:
 - `8 3 root` → `$\sqrt[3]{8}$`
