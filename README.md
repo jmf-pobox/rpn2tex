@@ -1,6 +1,6 @@
 # rpn2tex
 
-An educational example demonstrating the architecture of [txt2tex](../README.md).
+An educational example demonstrating the architecture of [txt2tex](https://github.com/jmf-pobox/txt2tex).
 
 This minimal implementation converts **Reverse Polish Notation (RPN)** expressions to **LaTeX math mode**, showcasing the same pipeline architecture used in the full txt2tex system.
 
